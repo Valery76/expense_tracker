@@ -2,7 +2,7 @@ require 'rack/test'
 require_relative '../../app/api'
 
 module ExpenseTracker
-  RSpec.describe 'Expense Tracker API' do
+  RSpec.describe 'Expense Tracker API', :db do
     # you can include Ruby modules into an RSpec describe/context,
     # just like you’re used to doing inside Ruby classes
     include Rack::Test::Methods  # it adds the mock methods like 'post', 'get' and so on
