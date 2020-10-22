@@ -27,16 +27,87 @@ module ExpenseTracker
         end
       end
 
-      context 'when the expense lacks a payee' do
-        it 'rejects the expense as invalid' do
-          expense.delete('payee')
+      context 'when the expense has problems with' do
+        context 'lacking a payee' do
+          it 'rejects the expense as invalid' do
+            expense.delete('payee')
 
-          result = ledger.record(expense)
+            result = ledger.record(expense)
 
-          expect(result).not_to be_success
-          expect(result.expense_id).to eq nil
-          expect(result.error_message).to include('`payee` is required')
-          expect(DB[:expenses].count).to eq 0
+            expect(result).not_to be_success
+            expect(result.expense_id).to eq nil
+            expect(result.error_message).to include('`payee` is required')
+            expect(DB[:expenses].count).to eq 0
+          end
+        end
+
+        context 'length of a payee value' do
+          it 'rejects the expense as invalid' do
+            expense.merge!('payee' => 'x' * 21)
+
+            result = ledger.record(expense)
+
+            expect(result).not_to be_success
+            expect(result.expense_id).to eq nil
+            expect(result.error_message).to include(
+              '`payee` must be a string at most 20 characters'
+            )
+            expect(DB[:expenses].count).to eq 0
+          end
+        end
+
+        context 'lacking an amount' do
+          it 'rejects the expense as invalid' do
+            expense.delete('amount')
+
+            result = ledger.record(expense)
+
+            expect(result).not_to be_success
+            expect(result.expense_id).to eq nil
+            expect(result.error_message).to include('`amount` is required')
+            expect(DB[:expenses].count).to eq 0
+          end
+        end
+
+        context 'a value of an amount' do
+          it 'rejects the expense as invalid' do
+            expense.merge!('amount' => -5.05)
+
+            result = ledger.record(expense)
+
+            expect(result).not_to be_success
+            expect(result.expense_id).to eq nil
+            expect(result.error_message).to include('`amount` must be a positive number')
+            expect(DB[:expenses].count).to eq 0
+          end
+        end
+
+        context 'lacking a date' do
+          it 'rejects the expense as invalid' do
+            expense.delete('date')
+
+            result = ledger.record(expense)
+
+            expect(result).not_to be_success
+            expect(result.expense_id).to eq nil
+            expect(result.error_message).to include('`date` is required')
+            expect(DB[:expenses].count).to eq 0
+          end
+        end
+
+        context 'a value of a date' do
+          it 'rejects the expense as invalid' do
+            expense.merge!('date' => '2017/06/10')
+
+            result = ledger.record(expense)
+
+            expect(result).not_to be_success
+            expect(result.expense_id).to eq nil
+            expect(result.error_message).to include(
+              '`date` must be a string in format `yyyy-mm-dd`'
+            )
+            expect(DB[:expenses].count).to eq 0
+          end
         end
       end
     end
